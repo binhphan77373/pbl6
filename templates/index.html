@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <title>Flask Model Deployment</title>
+</head>
+<body>
+    <h1>Welcome to the Model Deployment!</h1>
+    <form action="/predict" method="post" enctype="multipart/form-data">
+        <label for="text_input">Enter Text:</label>
+        <input type="text" name="text_input" required>
+        <label for="image_input">Upload Image:</label>
+        <input type="file" name="image_input" accept="image/*" required>
+        <button type="submit">Predict</button>
+    </form>    
+</body>
+</html>
