@@ -6,6 +6,9 @@ import torch.nn as nn
 from flask import Flask, render_template, request
 from sentence_transformers import SentenceTransformer
 from PIL import Image
+import requests
+from io import BytesIO
+from flask_cors import CORS
 
 model = resnet18(pretrained=True)
 model.fc
@@ -66,6 +69,7 @@ class Multimodal(nn.Module):
         return x
 
 app = Flask(__name__)
+CORS(app)
 
 tokenizer = SentenceTransformer('sentence-transformers/use-cmlm-multilingual')
 model = Multimodal(Vision_model,Language_model,num_classes=16)
@@ -85,11 +89,14 @@ def home():
 def predict():
     if request.method == 'POST':
         text_input = request.form['text_input']
-        image_file = request.files['image_input']
+        #image_file = request.files['image_input']
+        image_file = request.form['image_input']
 
-        text_encoded = tokenizer.encode(text_input, convert_to_tensor=True).unsqueeze(0) 
+        text_encoded = tokenizer.encode(text_input, convert_to_tensor=True).unsqueeze(0)
 
-        image = Image.open(image_file).convert('RGB')  
+        response = requests.get(image_file)
+        image = Image.open(BytesIO(response.content)).convert('RGB')
+        #image = Image.open(image_file).convert('RGB')  
         image_transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -101,8 +108,10 @@ def predict():
 
         prediction = prediction.argmax().item()
         predicted_label = class_labels.get(prediction, 'Unknown Class')
-
-        return render_template('predict.html', prediction=predicted_label)
+        
+        return predicted_label
+    
+        #return render_template('predict.html', prediction=predicted_label)
 
 if __name__ == '__main__':
     app.run(debug=True, host='localhost', port=8080)
